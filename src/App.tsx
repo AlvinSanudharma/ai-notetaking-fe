@@ -13,7 +13,7 @@ import { mockNotes } from "./lib/mock-data"
 import "./App.css"
 import axios from "axios"
 import type { BaseResponse } from "./dto/base-response"
-import type { GetAllNotebookResponse } from "./dto/notebook"
+import type { CreateNotebookRequest, CreateNotebookResponse, GetAllNotebookResponse } from "./dto/notebook"
 import { AppConfig } from "./config/config"
 
 export default function App() {
@@ -30,19 +30,19 @@ export default function App() {
   const [isDeletingNotebook, setIsDeletingNotebook] = useState<string | null>(null) // State for deleting notebook
   const [isDeletingNote, setIsDeletingNote] = useState<string | null>(null) // State for deleting note
 
+  const fetchAllNotebooks = async () => {
+    const data = await axios.get<BaseResponse<GetAllNotebookResponse[]>>(`${AppConfig.baseUrl}/notebook/v1`)
+
+    setNotebooks(data.data.data.map(notebook => ({
+      id: notebook.id,
+      name: notebook.name,
+      parentId: notebook.parent_id,
+      createdAt: notebook.created_at,
+      updatedAt: notebook.updated_at ?? notebook.created_at
+    })))
+  }
+
   useEffect(() => {
-    const fetchAllNotebooks = async () => {
-      const data = await axios.get<BaseResponse<GetAllNotebookResponse[]>>(`${AppConfig.baseUrl}/notebook/v1`)
-
-      setNotebooks(data.data.data.map(notebook => ({
-        id: notebook.id,
-        name: notebook.name,
-        parentId: notebook.parent_id,
-        createdAt: notebook.created_at,
-        updatedAt: notebook.updated_at ?? notebook.created_at
-      })))
-    }
-
     fetchAllNotebooks()
   }, [])
 
@@ -183,18 +183,14 @@ export default function App() {
 
     setIsCreatingNotebook(true)
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const newNotebook: Notebook = {
-      id: `notebook-${Date.now()}`,
+    const request: CreateNotebookRequest = {
       name: "New Notebook",
-      parentId: selectedNotebook || null, // This correctly uses null if selectedNotebook is null
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      parent_id: selectedNotebook ?? null
     }
 
-    setNotebooks((prev) => [...prev, newNotebook])
+    await axios.post<BaseResponse<CreateNotebookResponse>>(`${AppConfig.baseUrl}/notebook/v1`, request)
+
+    await fetchAllNotebooks()
 
     // Auto-expand parent notebook when adding a child notebook
     if (selectedNotebook) {
