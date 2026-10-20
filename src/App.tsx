@@ -54,11 +54,7 @@ export default function App() {
   }
 
   const handleNotebookUpdate = (notebookId: string, updates: Partial<Notebook>) => {
-    setNotebooks((prev) =>
-      prev.map((notebook) =>
-        notebook.id === notebookId ? { ...notebook, ...updates, updatedAt: new Date() } : notebook,
-      ),
-    )
+    fetchAllNotebooks()
   }
 
   const handleDeleteNotebook = async (notebookId: string) => {

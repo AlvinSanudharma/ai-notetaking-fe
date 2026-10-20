@@ -24,6 +24,10 @@ import {
 import { cn } from "../lib/utils";
 import type { Note } from "../types/note";
 import type { Notebook } from "../types/notebook";
+import axios from "axios";
+import { AppConfig } from "../config/config";
+import type { BaseResponse } from "@/dto/base-response";
+import type { UpdateNotebookRequest, UpdateNotebookResponse } from "@/dto/notebook";
 
 interface SidebarProps {
   notebooks: Notebook[];
@@ -104,7 +108,12 @@ export function Sidebar({
   const saveNotebookName = async () => {
     if (editingNotebook && editingName.trim()) {
       setIsSavingNotebookName(true); // Start loading
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Dummy delay
+
+      const request: UpdateNotebookRequest = {
+        name: editingName.trim()
+      }
+      await axios.put<BaseResponse<UpdateNotebookResponse>>(`${AppConfig.baseUrl}/notebook/v1/${editingNotebook}`, request)
+
       onNotebookUpdate(editingNotebook, { name: editingName.trim() });
       setIsSavingNotebookName(false); // End loading
     }
@@ -219,7 +228,7 @@ export function Sidebar({
           className={cn(
             "flex items-center group",
             isDragOver &&
-              "bg-blue-100 border-2 border-blue-300 border-dashed rounded",
+            "bg-blue-100 border-2 border-blue-300 border-dashed rounded",
           )}
           draggable={!isEditing && !isProcessingMove && !isThisNotebookDeleting} // Disable drag if editing, move, or deleting
           onDragStart={(e) => handleDragStart(e, "notebook", notebook.id)}
@@ -232,7 +241,7 @@ export function Sidebar({
             className={cn(
               "flex-1 justify-start h-9 px-2 font-normal transition-all duration-200",
               isSelected &&
-                "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800 shadow-sm border-l-2 border-blue-500",
+              "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800 shadow-sm border-l-2 border-blue-500",
               !isSelected && "hover:bg-gray-50 hover:shadow-sm",
               level > 0 && "bg-gray-25",
             )}
@@ -359,7 +368,7 @@ export function Sidebar({
                   className={cn(
                     "flex items-center group",
                     isDragOverNote &&
-                      "bg-blue-100 border-2 border-blue-300 border-dashed rounded",
+                    "bg-blue-100 border-2 border-blue-300 border-dashed rounded",
                   )}
                   draggable={!isProcessingMove && !isThisNoteDeleting} // Disable drag if move or deleting
                   onDragStart={(e) => handleDragStart(e, "note", note.id)}
@@ -372,9 +381,9 @@ export function Sidebar({
                     className={cn(
                       "flex-1 justify-start h-8 px-2 font-normal transition-all duration-200",
                       selectedNote === note.id &&
-                        "bg-gradient-to-r from-blue-50 to-blue-50 text-blue-800 shadow-sm",
+                      "bg-gradient-to-r from-blue-50 to-blue-50 text-blue-800 shadow-sm",
                       selectedNote !== note.id &&
-                        "hover:bg-gray-50 text-gray-700",
+                      "hover:bg-gray-50 text-gray-700",
                     )}
                     style={{ paddingLeft: `${(level + 1) * 16 + 8}px` }}
                     onClick={() => {
