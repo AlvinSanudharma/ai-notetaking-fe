@@ -1,7 +1,7 @@
 interface Config {
-    baseUrl: string
+  baseUrl: string;
 }
 
 export const AppConfig: Config = {
-    baseUrl: "http://localhost:3000/api"
-}
+  baseUrl: import.meta.env.VITE_API_BASE_URL,
+};
